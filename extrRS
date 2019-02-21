@@ -1,0 +1,35 @@
+#! /bin/sh
+
+file="ULLI"
+
+echo "date       time   PWV(mm)" >  ULLI_1
+
+while read line
+do
+if [ -z "$line" ]; then continue; fi              #check if empty
+echo $line > tmp
+
+line1=`grep "26063 ULLI" tmp`
+if [ ! -z "$line1" ]; then                        #check if contains
+hh=`echo $line1 | awk '{print $6}' | m4 -DZ= `
+min=00
+dd=`echo $line1 | awk '{print $7}'`
+mm=`echo $line1 | awk '{print $8}' | m4 -DOct=10`
+year=`echo $line1 | awk '{print $9}'`
+
+str="$dd $mm $year $hh $min"
+echo -n $str " " >> ULLI_1
+continue
+fi
+
+line2=`grep "Precipitable water" tmp`
+if [ ! -z "$line2" ]; then
+PWV=`echo $line2 | awk '{print $7}'`
+
+  str="$PWV"
+  echo -en $str "\n" >> ULLI_1
+fi
+
+#  echo $str | cl -%10.5f 1 -%8.2f 2 -%4.1f 3 -%7.2f 4 -%5.1f 5 -%6.2f 6 >> ULLI_1
+done <$file
+rm -f tmp

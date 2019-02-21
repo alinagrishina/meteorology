@@ -1,0 +1,35 @@
+#! /bin/sh
+#GOA=/opt/goa-6.4
+#file="RS"
+echo "BY          PWV[mm]" > WVR_1.iwv
+
+i=0
+while read line
+do
+if [ $i -eq 0 ]; then let "i=$i+1"; continue; fi
+a=`echo $(c() { echo $#; }; c $line)`
+#echo $line > tmp
+#echo `wc -w tmp`
+if [ $a -lt 4 ]; then continue; fi  #`wc -w $line`
+    dd=${line:0:2}
+    mm=${line:3:2}
+    yr=${line:6:4}
+#    hh=${line:11:2}
+#    min=${line:14:2}
+#    iwv=${line:17:5}
+hh=`echo $line | awk '{print $2}'`
+min=`echo $line | awk '{print $3}'`
+iwv=`echo $line | awk '{print $4}'`
+
+    date=`$GOA/bin/cal2sec $yr $mm $dd $hh $min`
+    mjd=`$GOA/bin/sec2mjd $date`
+    by=$(echo "scale=5; ($mjd - 15019.81352) / 365.242198781 + 1900.0" | bc)
+    str="$by $iwv"
+   
+    echo $str | $GOA/bin/cl -%10.5f 1 -%5.2f 2 >> WVR_1.iwv
+done <WVR
+rm -f tmp
+#exit 1
+# str=`head -n 1 2003-10-26pulk.wet`; mjd=`echo $str | awk '{print $2}' | cl -%8.0f 'c1*1000'`; echo $mjd    rounding of number
+
+
